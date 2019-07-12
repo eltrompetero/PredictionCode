@@ -201,8 +201,11 @@ def runPCANormal(data, pars, whichPC = 0, testset = None, deriv = False, useRaw=
     if pars['useRank']:
         Neuro = data['Neurons']['rankActivity']
     if useRaw:
+        import warnings
+        warnings.warn('Andy is suspciious of the "Raw" activity..')
         Neuro = data['Neurons']['Ratio']
     else:
+        print('We are using the default defined activity for PCA')
         Neuro = np.copy(data['Neurons']['Activity'])
     if testset is not None:
         Yfull = np.copy(Neuro).T
@@ -938,6 +941,8 @@ def runElasticNet(data, pars, splits, plot = False, scramble = False, behaviors 
         if pars['useRank']:
             X = np.copy(data['Neurons']['rankActivity'].T)
         if pars['useRaw']:
+            import warnings
+            warnings.warn('RawActivity is no longer supported. Andy took it out because it wasn not really raw. It was the ICAd value then 20th percentile normalized')
             X = np.copy(data['Neurons']['RawActivity'].T)
             X -= np.mean(X, axis = 0)
         elif pars['useClust']:
