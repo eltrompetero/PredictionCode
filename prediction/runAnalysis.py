@@ -38,6 +38,11 @@ def actuallyRun(typ='AML32', condition = 'moving'):
                 'rotate':False, # rotate Eigenworms using previously calculated rotation matrix
                 'windowGCamp': 6,  # gauss window for red and green channel
                 'interpolateNans': 6,#interpolate gaps smaller than this of nan values in calcium data
+                'perNeuronVarNorm': False, # Normalize variance per neuron?
+                                    # True makes all the variances the same
+                                    # False rescales the ICA'd signal to the mean and variance of the original GCaMP Signal
+                                    #       and then applies a (I-I0) / I0 where I0 is the 20th' percentile value of I per neuron
+
                 }
     
     dataSets = dh.loadMultipleDatasets(dataLog, pathTemplate=folder, dataPars = dataPars)
@@ -64,11 +69,7 @@ def actuallyRun(typ='AML32', condition = 'moving'):
             'nCluster': 10, # use the deconvolved transformed version of neural data for all analyses
             'useClust':False,# use clusters in the fitting procedure.
             'periods': np.arange(0, 300), # relevant periods in seconds for timescale estimate
-            'perNeuronVarNorm': False # Normalize variance per neuron?
-                                    # True makes all the variances the same
-                                    # False rescales the ICA'd signal to the mean and variance of the original GCaMP Signal
-                                    #       and then applies a (I-I0) / I0 where I0 is the 20th' percentile value of I per neuron
-             }
+        }
     
     behaviors = ['AngleVelocity', 'Eigenworm3']
     

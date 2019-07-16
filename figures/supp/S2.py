@@ -33,10 +33,16 @@ fs = mpl.rcParams["font.size"]
 data = {}
 for typ in ['AML32', 'AML18', 'AML70', 'AML175', 'Special']:
     for condition in ['chip', 'moving', 'immobilized', 'transition']:# ['moving', 'immobilized', 'chip']:
-        folder = '../../{}_{}/'.format(typ, condition)
-        dataLog = '../../{0}_{1}/{0}_{1}_datasets.txt'.format(typ, condition)
-        outLoc = "../../Analysis/{}_{}_results.hdf5".format(typ, condition)
-        outLocData = "../../Analysis/{}_{}.hdf5".format(typ, condition)
+#        folder = '../../{}_{}/'.format(typ, condition)
+#        dataLog = '../../{0}_{1}/{0}_{1}_datasets.txt'.format(typ, condition)
+#        outLoc = "../../Analysis/{}_{}_results.hdf5".format(typ, condition)
+#        outLocData = "../../Analysis/{}_{}.hdf5".format(typ, condition)
+#        
+        folder = '/Users/leifer/workspace/PredictionCode/{}_{}/'.format(typ, condition)
+        dataLog = '/Users/leifer/workspace/PredictionCode/{0}_{1}/{0}_{1}_datasets.txt'.format(typ, condition)
+        outLoc = "/Users/leifer/workspace/PredictionCode/Analysis/{}_{}_results.hdf5".format(typ, condition)
+        outLocData = "/Users/leifer/workspace/PredictionCode/Analysis/{}_{}.hdf5".format(typ, condition)
+
         
         try:
             # load multiple datasets
@@ -211,11 +217,17 @@ axcb.set_ylabel(r'$\Delta I/I_0$', labelpad = -5, rotation=-90)
 movData = 'BrainScanner20160506_160928'
 immData = 'BrainScanner20180518_094052'
     
+#for key, axhm,axetho, axpc, dset, title  in zip([movData, immData,], \
+#    [axhm1a, axhm2a], [axetho1a, axetho2a],[axpc1a, axpc2a],\
+#    [data['AML18_moving'],data['AML18_immobilized'], data['Special_transition']],\
+#    ['moving (GFP)', 'immobilized (GFP)', 'transient']):
 for key, axhm,axetho, axpc, dset, title  in zip([movData, immData,], \
     [axhm1a, axhm2a], [axetho1a, axetho2a],[axpc1a, axpc2a],\
-    [data['AML18_moving'],data['AML18_immobilized'], data['Special_transition']],\
-    ['moving (GFP)', 'immobilized (GFP)', 'transient']):
-    print key
+    [data['AML18_moving'],data['AML18_immobilized']],\
+    ['moving (GFP)', 'immobilized (GFP)']):
+    
+        
+    print(key)
     # get data
     transient = dset['input'][key]
     results2half = dset['analysis'][key][flag]
