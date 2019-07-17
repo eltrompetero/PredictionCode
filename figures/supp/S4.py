@@ -107,8 +107,8 @@ for condition, keys, ax in zip([ 'immobilized (GCaMP)','moving (GCaMP)', 'immobi
         dset = data[key]['analysis']
         for idn in dset.keys():
             results=  dset[idn]['PCA']
-            
-            tmpdata.append(results['eigenvalue'][:nComp])
+
+            tmpdata.append(results['expVariance'][:nComp])
             noiseS.append(results['fullShuffle'][:nComp])
             noiseL.append(results['lagShuffle'][:nComp])
           
@@ -125,7 +125,7 @@ for condition, keys, ax in zip([ 'immobilized (GCaMP)','moving (GCaMP)', 'immobi
     x0 = np.where(p>0.05)[0][0]
     print condition, x0, len(noiseL)
     ax.axvline(x0, color='k', linestyle='--', zorder=-10)
-    ax.set_yticks([0,25,50])
+    ax.set_yticks([0,.3,.6])
     ax.set_xticks([])
     #ax12.set_yticks([0,25,50,75,100])
 ax4.set_xlabel('# of components')

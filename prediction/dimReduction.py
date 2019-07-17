@@ -225,11 +225,14 @@ def runPCANormal(data, pars, whichPC = 0, testset = None, deriv = False, useRaw=
     indices = np.argsort(pcs[:,whichPC])
 
     if debug:
-        plt.subplot(211)
+        plt.subplot(311)
         plt.imshow(Y, aspect='auto')
-        plt.subplot(212)
+        plt.subplot(312)
         plt.plot(pca.explained_variance_)
+        plt.subplot(313)
+        plt.plot(pca.explained_variance_ratio)
         plt.show()
+
 
     #print indices.shape
     pcares = {}
@@ -279,12 +282,12 @@ def runPCANoiseLevelEstimate(Y, pars):
     sclar= StandardScaler(copy=True, with_mean=True, with_std=False)
     YS = sclar.fit_transform(YS)
     pca.fit(YS)
-    fullShuffle =  pca.explained_variance_
+    fullShuffle =  pca.explained_variance_ratio_
     # make sure data is centered
     sclar= StandardScaler(copy=True, with_mean=True, with_std=False)
     YR = sclar.fit_transform(YR)
     pca.fit(YR)
-    lagShuffle =  pca.explained_variance_
+    lagShuffle =  pca.explained_variance_ratio_
 #    plt.subplot(211)
 #    plt.imshow(YS.T, aspect='auto')
 #    plt.subplot(212)
