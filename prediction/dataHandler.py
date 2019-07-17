@@ -350,6 +350,8 @@ def preprocessNeuralData(R, G, dataPars):
     #YN is the per-neuron normalized  veriosn
     #I has been rescaled after ICA to maintain the std and mean of the original GCamp channel...
     
+    
+    
     YN = np.array([gaussian_filter1d(line,dataPars['windowGCamp']) for line in YN])
     YN =  preprocessing.scale(YN.T).T     # zscore values
 
@@ -450,6 +452,8 @@ def loadData(folder, dataPars, ew=1):
             nanmask[:,np.array(data['flagged_volumes'][0])] = np.nan
     Rfull = np.copy(Y)
     Rfull[np.isnan(nanmask)] =np.nan
+    dIfull = np.copy(dI)
+    dIfull[np.isnan(nanmask)] =np.nan
     
     Y = Y[order]
     dI = dI[order]
@@ -495,17 +499,25 @@ def loadData(folder, dataPars, ew=1):
     dataDict['Neurons']['Indices'] =  T#np.arange(Y[:,nonNan].shape[1])/6.#T[nonNan]
     dataDict['Neurons']['Time'] =  time[nonNan] # actual time
     dataDict['Neurons']['TimeFull'] =  time # actual time
-    dataDict['Neurons']['ActivityFull'] =  Rfull[order] # full activity
+    dataDict['Neurons']['ActivityFullPerNeuronNorm'] =  Rfull[order] # full activity
+    dataDict['Neurons']['ActivityFullPerNeuron20thNorm'] =  dIfull[order] # full activity
     dataDict['Neurons']['ActivityPerNeuronNorm'] = preprocessing.scale(Y[:,nonNan].T).T # redo because nans
-    dataDict['Neurons']['ActivityPerNeuron20thNorm'] = dI
+    dataDict['Neurons']['ActivityPerNeuron20thNorm'] = dI[:,nonNan]
     
+    
+    
+    print('perNeuronVarNorm=')
+    print(dataPars.get('perNeuronVarNorm'))
     #This is the default activity usedin the rest of the analysis
     if dataPars.get('perNeuronVarNorm')!=False: #if perNeuronVarNorm doesn't exist or is True
         print('===== We want to normalize per neuron just as before!======')
         dataDict['Neurons']['Activity'] = dataDict['Neurons']['ActivityPerNeuronNorm'] #this was Monika's old default behavior
+        dataDict['Neurons']['ActivityFull'] = dataDict['Neurons']['ActivityFullPerNeuronNorm']
     else:
         print('===== We want try the new approach of (I-I0) / I0======')
         dataDict['Neurons']['Activity'] = dataDict['Neurons']['ActivityPerNeuron20thNorm'] #this is what Andy is trying out
+        dataDict['Neurons']['ActivityFull'] = dataDict['Neurons']['ActivityFullPerNeuron20thNorm']
+
     
     dataDict['Neurons']['RawActivity'] = dR[:,nonNan] # I Think this is bogus and should'nt be used -- Andy
     dataDict['Neurons']['derivActivity'] = dY[:,nonNan]

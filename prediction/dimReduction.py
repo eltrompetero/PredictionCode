@@ -205,7 +205,6 @@ def runPCANormal(data, pars, whichPC = 0, testset = None, deriv = False, useRaw=
         warnings.warn('Andy is suspciious of the "Raw" activity..')
         Neuro = data['Neurons']['Ratio']
     else:
-        print('We are using the default defined activity for PCA')
         Neuro = np.copy(data['Neurons']['Activity'])
     if testset is not None:
         Yfull = np.copy(Neuro).T

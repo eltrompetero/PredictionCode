@@ -6,7 +6,7 @@ This is a meta script to run runAnalysis over and over again.
 @author: leifer
 """
 
-import runAnalysis as analysis
+import runDiagnosticAnalysis as analysis
 
 analysis.actuallyRun('AML32','moving')
 analysis.actuallyRun('AML18','moving')
@@ -21,3 +21,4 @@ analysis.actuallyRun('AML70','immobilized')
 analysis.actuallyRun('AML32','chip')
 analysis.actuallyRun('AML70','chip')
 
+execfile('../figures/supp/S4.py')
