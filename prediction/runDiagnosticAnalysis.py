@@ -38,7 +38,7 @@ def actuallyRun(typ='AML32', condition = 'moving'):
                 'rotate':False, # rotate Eigenworms using previously calculated rotation matrix
                 'windowGCamp': 6,  # gauss window for red and green channel
                 'interpolateNans': 6,#interpolate gaps smaller than this of nan values in calcium data
-                'perNeuronVarNorm': False, # Normalize variance per neuron?
+                'perNeuronVarNorm': True, # Normalize variance per neuron?
                                     # True makes all the variances the same
                                     # False rescales the ICA'd signal to the mean and variance of the original GCaMP Signal
                                     #       and then applies a (I-I0) / I0 where I0 is the 20th' percentile value of I per neuron

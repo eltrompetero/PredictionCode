@@ -353,7 +353,6 @@ def preprocessNeuralData(R, G, dataPars):
     
     
     YN = np.array([gaussian_filter1d(line,dataPars['windowGCamp']) for line in YN])
-    YN =  preprocessing.scale(YN.T).T     # zscore values
 
     # ANDY THINKS THIS IS AN ERROR.. IT MIXES UP THE R VALUES AND THE YN
     # (note how R0 is redefiend later)
