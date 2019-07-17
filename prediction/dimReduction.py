@@ -192,7 +192,7 @@ def createTrainingTestIndices(data, pars, label):
 #
 ##############################################
 
-def runPCANormal(data, pars, whichPC = 0, testset = None, deriv = False, useRaw=False):
+def runPCANormal(data, pars, whichPC = 0, testset = None, deriv = False, useRaw=False, debug=False):
     """run PCA on neural data and return nicely organized dictionary."""
     nComp = pars['nCompPCA']
     pca = PCA(n_components = nComp)
@@ -223,7 +223,14 @@ def runPCANormal(data, pars, whichPC = 0, testset = None, deriv = False, useRaw=
         comp = np.cumsum(comp, axis=1)
     
     indices = np.argsort(pcs[:,whichPC])
-    
+
+    if debug:
+        plt.subplot(211)
+        plt.imshow(Y, aspect='auto')
+        plt.subplot(212)
+        plt.plot(pca.explained_variance_)
+        plt.show()
+
     #print indices.shape
     pcares = {}
     pcares['nComp'] =  pars['nCompPCA']
