@@ -131,6 +131,33 @@ for condition, keys, ax in zip([ 'immobilized (GCaMP)','moving (GCaMP)', 'immobi
 ax4.set_xlabel('# of components')
 ax4.set_xticks([1,5,10])
 ax1.legend(loc=1, bbox_to_anchor=(0.55, 0.5, 0.5, 0.5))
+
+
+
+
+
+## Stamp with code version and date info
+import git
+repo = git.Repo(search_parent_directories=True)
+hash=repo.head.object.hexsha
+gitpath=repoPath=repo._working_tree_dir
+giturl=repo.remotes.origin.url
+
+from datetime import datetime
+timestamp=datetime.today().strftime('%Y-%m-%d %H:%M')
+
+provenance = timestamp + '\n' + str(hash) + '\n' + giturl + '\n' + gitpath
+
+
+
+# these are matplotlib.patch.Patch properties
+props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+
+# place a text box in upper left in axes coords
+ax3.text(.2, 0.9, provenance, transform=ax.transAxes, fontsize=8,
+        verticalalignment='top', bbox=props)
+
+
 plt.show()
 
 
