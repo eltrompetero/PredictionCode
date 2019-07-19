@@ -33,11 +33,11 @@ fs = mpl.rcParams["font.size"]
 data = {}
 for typ in ['AML32', 'AML18', 'AML175', 'AML70']:
     for condition in ['moving', 'chip']:# ['moving', 'immobilized', 'chip']:
-        folder = '../../{}_{}/'.format(typ, condition)
-        dataLog = '../../{0}_{1}/{0}_{1}_datasets.txt'.format(typ, condition)
-        outLoc = "../../Analysis/{}_{}_results.hdf5".format(typ, condition)
-        outLocData = "../../Analysis/{}_{}.hdf5".format(typ, condition)
-        
+        folder = '/Users/leifer/workspace/PredictionCode/{}_{}/'.format(typ, condition)
+        dataLog = '/Users/leifer/workspace/PredictionCode/{0}_{1}/{0}_{1}_datasets.txt'.format(typ, condition)
+        outLoc = "/Users/leifer/workspace/PredictionCode/Analysis/{}_{}_results.hdf5".format(typ, condition)
+        outLocData = "/Users/leifer/workspace/PredictionCode/Analysis/{}_{}.hdf5".format(typ, condition)
+
         try:
             # load multiple datasets
             dataSets = dh.loadDictFromHDF(outLocData)

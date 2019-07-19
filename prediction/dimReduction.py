@@ -230,7 +230,7 @@ def runPCANormal(data, pars, whichPC = 0, testset = None, deriv = False, useRaw=
         plt.subplot(312)
         plt.plot(pca.explained_variance_)
         plt.subplot(313)
-        plt.plot(pca.explained_variance_ratio)
+        plt.plot(pca.explained_variance_ratio_)
         plt.show()
 
 
