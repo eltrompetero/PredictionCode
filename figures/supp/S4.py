@@ -99,6 +99,7 @@ imExp = ['AML32_immobilized', 'AML70_immobilized']
 movCtrl = ['AML18_moving', 'AML175_moving']
 imCtrl = ['AML18_immobilized']
 
+
 for condition, keys, ax in zip([ 'immobilized (GCaMP)','moving (GCaMP)', 'immobilized (GFP)','moving (GFP)'], [ imExp,movExp,imCtrl, movCtrl ],  [ax2, ax1, ax4, ax3]):
     tmpdata = []
     noiseS = []
@@ -135,29 +136,8 @@ ax1.legend(loc=1, bbox_to_anchor=(0.55, 0.5, 0.5, 0.5))
 
 
 
-
-## Stamp with code version and date info
-import git
-repo = git.Repo(search_parent_directories=True)
-hash=repo.head.object.hexsha
-gitpath=repoPath=repo._working_tree_dir
-giturl=repo.remotes.origin.url
-
-from datetime import datetime
-timestamp=datetime.today().strftime('%Y-%m-%d %H:%M')
-
-provenance = timestamp + '\n' + str(hash) + '\n' + giturl + '\n' + gitpath
-
-
-
-# these are matplotlib.patch.Patch properties
-props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-
-# place a text box in upper left in axes coords
-ax3.text(.2, 0.9, provenance, transform=ax.transAxes, fontsize=8,
-        verticalalignment='top', bbox=props)
-
-
+from prediction import provenance as p
+p.stamp(ax4,.2,.9)
 plt.show()
 
 
