@@ -57,13 +57,31 @@ zPosNN[np.where(np.isnan(rPhotoCorr)) ] = np.nan
 
 xedges=range(0,600,10)
 yedges=range(0,600,10)
-neuron=1
 
-H, xedges, yedges = np.histogram2d(xPosNN[neuron],yPosNN[neuron], normed=False, bins=(xedges,yedges))
-PDF, xedges, yedges = np.histogram2d(xPosNN[neuron],yPosNN[neuron], normed=True, bins=(xedges,yedges))
-#Histogram WEighted Sum
-Hws, xedges, yedges = np.histogram2d(xPosNN[neuron],yPosNN[neuron], weights=rPhotoCorr[neuron], bins=(xedges,yedges))
-numrows, numcols = Hws.shape
+GroupNeurons=True
+
+if (GroupNeurons==False):
+    neuron=1
+    print('Calculating a single neuron')
+    H, xedges, yedges = np.histogram2d(xPosNN[neuron],yPosNN[neuron], normed=False, bins=(xedges,yedges))
+    PDF, xedges, yedges = np.histogram2d(xPosNN[neuron],yPosNN[neuron], normed=True, bins=(xedges,yedges))
+    #Histogram WEighted Sum
+    Hws, xedges, yedges = np.histogram2d(xPosNN[neuron],yPosNN[neuron], weights=rPhotoCorr[neuron], bins=(xedges,yedges))
+    numrows, numcols = Hws.shape
+else:
+    print('Aggregating all neurons together')
+    xPosAllNN = np.squeeze(np.reshape(xPosNN, [-1, 1]))
+    yPosAllNN = np.squeeze(np.reshape(yPosNN, [-1, 1]))
+    zPosAllNN = np.squeeze(np.reshape(zPosNN, [-1, 1]))
+
+    rPhotoCorrAll = np.squeeze(np.reshape(rPhotoCorr, [-1, 1]))
+
+    H, xedges, yedges = np.histogram2d(xPosAllNN, yPosAllNN, normed=False, bins=(xedges, yedges))
+    PDF, xedges, yedges = np.histogram2d(xPosAllNN, yPosAllNN, normed=True, bins=(xedges, yedges))
+    # Histogram WEighted Sum
+    Hws, xedges, yedges = np.histogram2d(xPosAllNN, yPosAllNN, weights=rPhotoCorrAll,
+                                         bins=(xedges, yedges))
+
 
 
 import matplotlib
@@ -122,7 +140,7 @@ plt.show()
 
 #### TODO:
 # Need to z-score and repeat
-# Need to reshape such that all neurons are lumped together into one bin
+# Need to reshape such that all neurons are lumped together into one bin DONE
 # Then need to try applyking correction to GFP and see how it goes..
 
 
