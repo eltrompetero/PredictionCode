@@ -70,16 +70,30 @@ if (GroupNeurons==False):
     numrows, numcols = Hws.shape
 else:
     print('Aggregating all neurons together')
+
+
     xPosAllNN = np.squeeze(np.reshape(xPosNN, [-1, 1]))
     yPosAllNN = np.squeeze(np.reshape(yPosNN, [-1, 1]))
     zPosAllNN = np.squeeze(np.reshape(zPosNN, [-1, 1]))
 
-    rPhotoCorrAll = np.squeeze(np.reshape(rPhotoCorr, [-1, 1]))
+    from sklearn.preprocessing import StandardScaler
+
+    zscore = StandardScaler(copy=True, with_mean=True, with_std=True)
+    rPhotoCorrz = zscore.fit_transform(rPhotoCorr.T).T
+    if False:
+        print('Expect to be zero:')
+        print(np.nanmean(rPhotoCorrz[1,:]))
+        print('Expect to be not quite zero')
+        print(np.nanmean(rPhotoCorrz[:,400]))
+
+    rPhotoCorrAllz = np.squeeze(np.reshape(rPhotoCorrz, [-1, 1]))
+
+
 
     H, xedges, yedges = np.histogram2d(xPosAllNN, yPosAllNN, normed=False, bins=(xedges, yedges))
     PDF, xedges, yedges = np.histogram2d(xPosAllNN, yPosAllNN, normed=True, bins=(xedges, yedges))
     # Histogram WEighted Sum
-    Hws, xedges, yedges = np.histogram2d(xPosAllNN, yPosAllNN, weights=rPhotoCorrAll,
+    Hws, xedges, yedges = np.histogram2d(xPosAllNN, yPosAllNN, weights=rPhotoCorrAllz,
                                          bins=(xedges, yedges))
 
 
@@ -139,7 +153,7 @@ plt.show()
 
 
 #### TODO:
-# Need to z-score and repeat
+# Need to z-score and repeat DONE
 # Need to reshape such that all neurons are lumped together into one bin DONE
 # Then need to try applyking correction to GFP and see how it goes..
 
