@@ -2,7 +2,7 @@ import scipy.io as sio
 
 
 
-mat_contents = sio.loadmat('/Users/leifer/workspace/PredictionCode/AML18_moving/BrainScanner20160506_155051_MS/PointsStats2.mat')
+mat_contents = sio.loadmat('/Users/leifer/workspace/PredictionCode/AML18_moving/BrainScanner20170421_103508_MS/PointsStats2.mat')
 
 import numpy as np
 #x,y,z coordinates of each point (new index each frame)(
@@ -13,7 +13,7 @@ trackIdx=np.squeeze(np.array(mat_contents['pointStats2']['trackIdx']))
 
 
 #Get the heatmap values
-mat_contents = sio.loadmat('/Users/leifer/workspace/PredictionCode/AML18_moving/BrainScanner20160506_155051_MS/heatData.mat')
+mat_contents = sio.loadmat('/Users/leifer/workspace/PredictionCode/AML18_moving/BrainScanner20170421_103508_MS/heatData.mat')
 rPhotoCorr=mat_contents['rPhotoCorr']
 gPhotoCorr=mat_contents['gPhotoCorr']
 
@@ -76,24 +76,28 @@ else:
     yPosAllNN = np.squeeze(np.reshape(yPosNN, [-1, 1]))
     zPosAllNN = np.squeeze(np.reshape(zPosNN, [-1, 1]))
 
-    from sklearn.preprocessing import StandardScaler
 
-    zscore = StandardScaler(copy=True, with_mean=True, with_std=True)
-    rPhotoCorrz = zscore.fit_transform(rPhotoCorr.T).T
-    if False:
-        print('Expect to be zero:')
-        print(np.nanmean(rPhotoCorrz[1,:]))
-        print('Expect to be not quite zero')
-        print(np.nanmean(rPhotoCorrz[:,400]))
+    # MeanNormalized
+    rPhotoCorrNorm = np.divide(rPhotoCorr, np.nanmean(rPhotoCorr, axis=1, keepdims=True))
 
-    rPhotoCorrAllz = np.squeeze(np.reshape(rPhotoCorrz, [-1, 1]))
+
+
+
+
+    if True:
+        print('Expect to be one:')
+        print(np.nanmean(rPhotoCorrNorm[1, :]))
+        print('Expect to be not quite one')
+        print(np.nanmean(rPhotoCorrNorm[:, 400]))
+
+    rPhotoCorrAllNorm = np.squeeze(np.reshape(rPhotoCorrNorm, [-1, 1]))
 
 
 
     H, xedges, yedges = np.histogram2d(xPosAllNN, yPosAllNN, normed=False, bins=(xedges, yedges))
     PDF, xedges, yedges = np.histogram2d(xPosAllNN, yPosAllNN, normed=True, bins=(xedges, yedges))
     # Histogram WEighted Sum
-    Hws, xedges, yedges = np.histogram2d(xPosAllNN, yPosAllNN, weights=rPhotoCorrAllz,
+    Hws, xedges, yedges = np.histogram2d(xPosAllNN, yPosAllNN, weights=rPhotoCorrAllNorm,
                                          bins=(xedges, yedges))
 
 
@@ -103,52 +107,184 @@ import matplotlib.pyplot as plt
 
 
 
-def format_coord(x, y):
-    col = int(x+0.5)
-    row = int(y+0.5)
-    if col>=0 and col<numcols and row>=0 and row<numrows:
-        z = X[row,col]
-        return 'x=%1.4f, y=%1.4f, z=%1.4f'%(x, y, z)
-    else:
-        return 'x=%1.4f, y=%1.4f'%(x, y)
 
 
-fig = plt.figure(figsize=(7, 3))
-ax = fig.add_subplot(121, title='imshow: square bins')
-ax.format_coord=format_coord
-plt.imshow(Hws, interpolation='nearest', origin='low', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])
-plt.colorbar()
-ax = fig.add_subplot(122, title='Weighted counts pcolormesh: actual edges',
-        aspect='equal')
-X, Y = np.meshgrid(xedges, yedges)
-ax.pcolormesh(X, Y, Hws)
-ax.format_coord=format_coord
-plt.colorbar()
-plt.show()
+verbose=False
+if verbose:
+    fig = plt.figure(figsize=(7, 3))
+    ax = fig.add_subplot(121, title='imshow: square bins')
+    ax.format_coord=format_coord
+    plt.imshow(Hws, interpolation='nearest', origin='low', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])
+    plt.colorbar()
+    ax = fig.add_subplot(122, title='Weighted counts pcolormesh: actual edges',
+            aspect='equal')
+    X, Y = np.meshgrid(xedges, yedges)
+    ax.pcolormesh(X, Y, Hws)
+    ax.format_coord=format_coord
+    plt.colorbar()
+    plt.show()
 
-plt.figure()
-plt.imshow(PDF, interpolation='nearest', origin='low', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])
-plt.format_coord=format_coord
-plt.title('PDF')
-plt.colorbar()
-plt.show()
+    plt.figure()
+    plt.imshow(PDF, interpolation='nearest', origin='low', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])
+    plt.format_coord=format_coord
+    plt.title('PDF')
+    plt.colorbar()
+    plt.show()
 
-plt.figure()
-plt.imshow(H, interpolation='nearest', origin='low', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])
-plt.format_coord=format_coord
-plt.title('Histogram (counts)')
-plt.colorbar()
-plt.show()
+    plt.figure()
+    plt.imshow(H, interpolation='nearest', origin='low', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])
+    plt.format_coord=format_coord
+    plt.title('Histogram (counts)')
+    plt.colorbar()
+    plt.show()
 
 
-mean = np.divide(Hws, H, out=np.zeros_like(H), where=(H != 0))
+# LUT
+LUT = mean = np.divide(Hws, H, out=np.zeros_like(H), where=(H != 0))
 
 plt.figure()
-plt.imshow(mean, interpolation='nearest', origin='low', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])
-plt.format_coord=format_coord
-plt.title('Mean value')
+plt.imshow(LUT.T, interpolation='None', origin='high', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])
+plt.title('Loopk Up table, mean of all neurons, z-scored.. validated')
 plt.colorbar()
 plt.show()
+
+#### Now let's explore using the LUT as something to invert to correct for motion artifact
+
+plt.figure()
+plt.imshow(gPhotoCorr, aspect='auto')
+plt.title('GFP photocorrected')
+plt.colorbar()
+plt.show()
+
+
+# MeanNormalized
+gPhotoCorrNorm = np.divide(gPhotoCorr, np.nanmean(gPhotoCorr, axis=1, keepdims=True))
+
+
+
+#For the final plotting we wont to show as f-F0/f0
+gPhotoCorr0=np.nanpercentile(gPhotoCorr, 20, axis=1,keepdims=True)
+
+
+plt.figure()
+plt.imshow( np.divide(gPhotoCorr-gPhotoCorr0,gPhotoCorr0), aspect='auto', vmin=-1, vmax=2)
+plt.title('GFP photocorrected (F-F0)/F0')
+plt.colorbar()
+plt.show()
+
+
+
+### Do the actual inversion
+
+#get everything into a one dimensional array to match position,
+# (we don't care about time right now)
+gPhotoCorrAllNorm=np.squeeze(np.reshape(gPhotoCorrNorm, [-1, 1]))
+
+
+#Setup look up interpolation based lookup function function
+xcenters = xedges[:-1]+np.median(np.diff(xedges))/2
+ycenters = yedges[:-1]+np.median(np.diff(yedges))/2
+
+from scipy import interpolate
+N=len(xcenters)
+pts = np.array(np.meshgrid(xcenters,ycenters)).T.reshape((N*N,2))
+lookUpLinear = interpolate.LinearNDInterpolator(pts,LUT.ravel())
+
+verbose=True
+if verbose:
+    print('Confirm that the look up worked..')
+    plt.figure()
+    plt.scatter(lookUpLinear(pts), LUT.ravel())
+    plt.show()
+
+#Perform the Lookup
+rInferredFromPosNorm = lookUpLinear(xPos.ravel(), yPos.ravel())
+
+
+if verbose:
+    plt.figure()
+    plt.scatter(rPhotoCorrAllNorm, rInferredFromPosNorm,alpha=0.5, marker='o', s=5, lw=0,)
+    plt.xlabel('True Rvalue of every neuorn')
+    plt.ylabel('R value that is inferred from LUT based on position ')
+    plt.show()
+
+
+
+
+###Divide by the inferred red value
+
+#for Green
+exlcudeNans=np.logical_not( np.isnan(rInferredFromPosNorm) )
+gPosCorr_weird=gPhotoCorrAllNorm
+gPosCorr_weird[exlcudeNans] =np.divide(gPhotoCorrAllNorm[exlcudeNans], rInferredFromPosNorm[exlcudeNans])
+gPosCorr_weird=np.reshape(gPosCorr_weird,gPhotoCorr.shape)
+
+#do for red as control
+rPosCorr_weird=rPhotoCorrAllNorm
+rPosCorr_weird[exlcudeNans] =np.divide(rPhotoCorrAllNorm[exlcudeNans], rInferredFromPosNorm[exlcudeNans])
+rPosCorr_weird=np.reshape(rPosCorr_weird,rPhotoCorr.shape)
+
+
+if verbose:
+    for neuron in np.random.randint(len(rPhotoCorr),size=4):
+        plt.figure()
+        plt.scatter(np.reshape(rInferredFromPosNorm, gPhotoCorr.shape)[neuron], rPhotoCorrNorm[neuron],alpha=0.5, marker='o', s=5, lw=0,)
+        plt.xlabel('Position based Look Up table (from RFP)')
+        plt.ylabel('RFP only photobleaching corrected and normalized to mean')
+        plt.title('How much of RFPs signal is captured by position for neuron'+str(neuron))
+        plt.show()
+
+    #Let's cehck for each neuron how well its RFP and GFP signal correlate with the position look up table
+
+    expectedRfromLUT=np.reshape(rInferredFromPosNorm, gPhotoCorr.shape)
+    metric=np.zeros(gPhotoCorr.shape[0])
+    for neuron in range(gPhotoCorr.shape[0]):
+        #excludenans
+        elementsToInclude = np.logical_and( np.logical_not( np.isnan(expectedRfromLUT[neuron])),
+                                            np.logical_not( np.isnan(rPhotoCorr[neuron])) )
+
+        metric[neuron]=np.corrcoef(expectedRfromLUT[neuron][elementsToInclude], rPhotoCorrNorm[neuron][elementsToInclude] )[0,1]
+    plt.figure()
+    plt.hist(metric[np.logical_not(np.isnan(metric))],bins='auto')
+    plt.title('Correlation Coefficients for each RFP neuron-time-pt with its position based look-up value')
+    plt.xlabel('correlation coefficient')
+    plt.ylabel('count')
+    plt.show()
+
+
+
+
+
+###
+if verbose:
+    plt.figure()
+    plt.subplot(4, 1, 1)
+    plt.imshow(rPhotoCorrNorm,aspect='auto',vmin=0,vmax=2)
+    plt.colorbar()
+    plt.title('rPhotoCorr normalized')
+
+    plt.subplot(4,1,2)
+    plt.imshow(np.reshape(rInferredFromPosNorm, gPhotoCorr.shape), vmin=.9,vmax=1.1, aspect='auto')
+    plt.colorbar()
+    plt.title('Activity inferred only from position')
+
+    plt.subplot(4,1,3)
+    plt.imshow(rPosCorr_weird,aspect='auto',vmin=0,vmax=2)
+    plt.colorbar()
+    plt.title('rPhotoCorr normalized divided by inferred activity')
+
+    plt.subplot(4, 1, 4)
+    plt.imshow(rPhotoCorrNorm-rPosCorr_weird, vmin=-.1,vmax=.1, aspect='auto')
+    plt.colorbar()
+    plt.title('Difference')
+
+    plt.show()
+###
+
+
+
+
+
 
 
 
