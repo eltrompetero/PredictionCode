@@ -70,7 +70,7 @@ from prediction import provenance as prov
 
 ordIndx=data['AML18_moving']['input']['BrainScanner20160506_160928']['Neurons']['ordering']
 
-plt.figure()
+fig1=plt.figure()
 plt.subplot(4, 1, 1)
 plt.imshow(rPhotoCorr[ordIndx,:],aspect='auto')
 plt.colorbar()
@@ -95,7 +95,53 @@ plt.title('"ActivityFull" (ICAd, plus Andys modified normalization) \n' +dataset
 plt.show()
 
 
+## Plot velocity and body curvature
+vel=data['AML18_moving']['input']['BrainScanner20160506_160928']['Behavior']['AngleVelocity']
+bodycurv= data['AML18_moving']['input']['BrainScanner20160506_160928']['Behavior']['Eigenworm3']
+
+
+plt.subplots(4,1,sharex=True)
+ax1=plt.subplot(4, 1, 1)
+plt.imshow(rPhotoCorr[ordIndx,:],aspect='auto')
+plt.colorbar()
+plt.title('rPhotoCorr')
+
+ax2=plt.subplot(4,1,2)
+plt.imshow(gPhotoCorr[ordIndx,:],aspect='auto')
+plt.colorbar()
+plt.title('gPhotoCorr')
+
+
+
+ax3=plt.subplot(4,1,3)
+plt.plot(vel)
+plt.title('Velocity')
+ax3.set_xlim(ax1.get_xlim())
+
+ax4=plt.subplot(4, 1, 4)
+plt.plot(bodycurv)
+prov.stamp(ax4,0,-.3)
+plt.title('Body Curvature')
+ax4.set_xlim(ax1.get_xlim())
+
+# align the axes
+pos1 = ax1.get_position()
+pos2 = ax2.get_position()
+pos3 = ax3.get_position()
+pos4 = ax4.get_position()
+ax3.set_position([pos1.x0,pos3.y0,pos1.width,pos3.height])
+ax4.set_position([pos1.x0,pos4.y0,pos1.width,pos4.height])
+
+plt.show()
+
+
+
+
+
+
 ## Extract neural weights learned by the SLM from a GCaMP Recording
+
+
 
 ## Shuffle the neural Weights
 
