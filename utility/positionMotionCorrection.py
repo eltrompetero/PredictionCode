@@ -2,7 +2,7 @@ import scipy.io as sio
 
 
 
-mat_contents = sio.loadmat('/Users/leifer/workspace/PredictionCode/AML18_moving/BrainScanner20170421_103508_MS/PointsStats2.mat')
+    mat_contents = sio.loadmat('/Users/leifer/workspace/PredictionCode/AML18_moving/BrainScanner20170421_103508_MS/PointsStats2.mat')
 
 import numpy as np
 #x,y,z coordinates of each point (new index each frame)(
@@ -254,7 +254,7 @@ if verbose:
 
 
 
-
+from prediction import provenance as prov
 ###
 if verbose:
     plt.figure()
@@ -273,11 +273,11 @@ if verbose:
     plt.colorbar()
     plt.title('rPhotoCorr normalized divided by inferred activity')
 
-    plt.subplot(4, 1, 4)
+    ax=plt.subplot(4, 1, 4)
     plt.imshow(rPhotoCorrNorm-rPosCorr_weird, vmin=-.1,vmax=.1, aspect='auto')
     plt.colorbar()
     plt.title('Difference')
-
+    prov.stamp(ax,0,-.3)
     plt.show()
 ###
 
