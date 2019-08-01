@@ -30,7 +30,9 @@ dataset = '/Users/leifer/workspace/PredictionCode/AML18_moving/BrainScanner20160
 import scipy.io as sio
 mat_contents = sio.loadmat(dataset)
 rPhotoCorr = mat_contents['rPhotoCorr']
+rRaw = mat_contents['rRaw']
 gPhotoCorr = mat_contents['gPhotoCorr']
+gRaw = mat_contents['gRaw']
 Ratio2 = mat_contents['Ratio2']
 
 # Import Monika's ICA'd version (with my modification s.t. there is no z-scoring)
@@ -82,9 +84,9 @@ plt.colorbar()
 plt.title('gPhotoCorr')
 
 plt.subplot(4,1,3)
-plt.imshow(Ratio2[ordIndx,:],aspect='auto')
+plt.imshow(np.divide(gPhotoCorr,rPhotoCorr)[ordIndx,:],aspect='auto')
 plt.colorbar()
-plt.title('Ratio2')
+plt.title('gPhotoCorr/rPhotoCorr')
 
 
 ax=plt.subplot(4, 1, 4)
@@ -95,44 +97,88 @@ plt.title('"ActivityFull" (ICAd, plus Andys modified normalization) \n' +dataset
 plt.show()
 
 
+
+fig2=plt.figure()
+ax21=plt.subplot(5, 1, 1)
+plt.imshow(rRaw[ordIndx, :], aspect='auto', vmin=np.nanmean(rRaw)-2*np.nanstd(rRaw), vmax=np.nanmean(rRaw)+2*np.nanstd(rRaw))
+plt.colorbar()
+plt.title('rRaw')
+
+
+ax22=plt.subplot(5,1,2)
+plt.plot(10*np.sum(np.isnan(rRaw) ,axis=0)) #plot how many nans at each time point (x10 fo visibility)
+plt.plot(np.nanmean(rRaw, axis=0)) # plot the average rRaw intesnity
+plt.title('rRaw Average Intensity, and number of neurons with NaN')
+ax22.set_ylim( np.nanmean(rRaw)-1*np.nanstd(rRaw), np.nanmean(rRaw)+2*np.nanstd(rRaw) )
+ax22.set_xlim(0,rRaw.shape[1])
+pos21 = ax21.get_position()
+pos22 = ax22.get_position()
+ax22.set_position([pos21.x0,pos22.y0,pos21.width,pos22.height])
+
+
+
+plt.subplot(5,1,3)
+plt.imshow(gRaw[ordIndx, :], aspect='auto', vmin=np.nanmean(gRaw)-2*np.nanstd(gRaw), vmax=np.nanmean(gRaw)+2*np.nanstd(gRaw))
+plt.colorbar()
+plt.title('gRaw')
+
+plt.subplot(5,1,4)
+plt.imshow(np.divide(gRaw, rRaw)[ordIndx, :], aspect='auto')
+plt.colorbar()
+plt.title('gRaw/rRaw')
+
+
+ax=plt.subplot(5, 1, 5)
+plt.imshow(data['AML18_moving']['input']['BrainScanner20160506_160928']['Neurons']['ActivityFull'],aspect='auto')
+plt.colorbar()
+prov.stamp(ax,0,-.3)
+plt.title('"ActivityFull" (ICAd, plus Andys modified normalization) \n' +dataset)
+plt.xlabel('Volumes (6 vol /s )')
+plt.show()
+
+
+
+
+
+
 ## Plot velocity and body curvature
 vel=data['AML18_moving']['input']['BrainScanner20160506_160928']['Behavior']['AngleVelocity']
 bodycurv= data['AML18_moving']['input']['BrainScanner20160506_160928']['Behavior']['Eigenworm3']
 
+if True:
+    plt.subplots(4,1,sharex=True)
+    ax1=plt.subplot(4, 1, 1)
+    plt.imshow(rPhotoCorr[ordIndx,:],aspect='auto')
+    plt.colorbar()
+    plt.title('rPhotoCorr')
 
-plt.subplots(4,1,sharex=True)
-ax1=plt.subplot(4, 1, 1)
-plt.imshow(rPhotoCorr[ordIndx,:],aspect='auto')
-plt.colorbar()
-plt.title('rPhotoCorr')
-
-ax2=plt.subplot(4,1,2)
-plt.imshow(gPhotoCorr[ordIndx,:],aspect='auto')
-plt.colorbar()
-plt.title('gPhotoCorr')
+    ax2=plt.subplot(4,1,2)
+    plt.imshow(gPhotoCorr[ordIndx,:],aspect='auto')
+    plt.colorbar()
+    plt.title('gPhotoCorr')
 
 
 
-ax3=plt.subplot(4,1,3)
-plt.plot(vel)
-plt.title('Velocity')
-ax3.set_xlim(ax1.get_xlim())
+    ax3=plt.subplot(4,1,3)
+    plt.plot(vel)
+    plt.title('Velocity')
+    ax3.set_xlim(ax1.get_xlim())
 
-ax4=plt.subplot(4, 1, 4)
-plt.plot(bodycurv)
-prov.stamp(ax4,0,-.3)
-plt.title('Body Curvature')
-ax4.set_xlim(ax1.get_xlim())
+    ax4=plt.subplot(4, 1, 4)
+    plt.plot(bodycurv)
+    prov.stamp(ax4,0,-.3)
+    plt.title('Body Curvature')
+    ax4.set_xlim(ax1.get_xlim())
 
-# align the axes
-pos1 = ax1.get_position()
-pos2 = ax2.get_position()
-pos3 = ax3.get_position()
-pos4 = ax4.get_position()
-ax3.set_position([pos1.x0,pos3.y0,pos1.width,pos3.height])
-ax4.set_position([pos1.x0,pos4.y0,pos1.width,pos4.height])
+    # align the axes
+    pos1 = ax1.get_position()
+    pos2 = ax2.get_position()
+    pos3 = ax3.get_position()
+    pos4 = ax4.get_position()
+    ax3.set_position([pos1.x0,pos3.y0,pos1.width,pos3.height])
+    ax4.set_position([pos1.x0,pos4.y0,pos1.width,pos4.height])
 
-plt.show()
+    plt.show()
 
 
 
