@@ -272,30 +272,40 @@ def transformEigenworms(pcs, dataPars):
 def decorrelateNeuronsICA(R, G):
     """use PCA to remove covariance in Green and Red signals."""
     Ynew = []
-    INonNorm = [] 
+    INonNorm = np.empty(G.shape)
+    INonNorm[:]=np.nan #initialize it with nans
     
     ica = FastICA(n_components = 2)
+
+    #the fits can't handle the nans, so we gotta tempororaily exclude them
+    #we won't interpolate, we will just remove them than add them back
+    nanmask = np.logical_or(np.isnan(R),np.isnan(G))
+
+
+
     for li in range(len(R)):
-        Y = np.vstack([R[li], G[li]]).T
+        Y = np.vstack([R[li,~nanmask[li]], G[li,~nanmask[li]]]).T
         sclar2= StandardScaler(copy=True, with_mean=True, with_std=True)
         Y = sclar2.fit_transform(Y)
         S = ica.fit_transform(Y)
         
         # order components by max correlation with red signal
-        v = [np.corrcoef(s,R[li])[0,1] for s in S.T]
+        v = [np.corrcoef(s,R[li,~nanmask[li]])[0,1] for s in S.T]
         idn = np.argmin(np.abs(v))
         # check if signal needs to be inverted
-        sign = np.sign(np.corrcoef(S[:,idn],G[li])[0,1])
+        sign = np.sign(np.corrcoef(S[:,idn],G[li,~nanmask[li]])[0,1])
         signal = sign*(S[:,idn])       
         Ynew.append(signal)
         
         #Rescale and add back mean WARNING: this means that I values can be negative
-        rescaledSignal = ( np.std(G[li])/np.std(signal) ) * signal + np.mean(G[li])
-        INonNorm.append(rescaledSignal)   
+        rescaledSignalTrunc = ( np.std(G[li,~nanmask[li]])/np.std(signal) ) * signal + np.mean(G[li,~nanmask[li]])
+
+        #until now we had been dealing with truncated variables because we cut out the nans.. now we need to add the nans back
+        INonNorm[li,~nanmask[li]] = rescaledSignalTrunc
         
         if False: #Good for debugging
             print(np.std(G[li]))
-            print(np.std(rescaledSignal))
+            print(np.std(rescaledSignalTrunc))
             
             plt.plot(G[li])
             plt.show()
@@ -303,7 +313,7 @@ def decorrelateNeuronsICA(R, G):
             plt.plot(R[li])
             plt.show()
             
-            plt.scatter(G[li],rescaledSignal)
+            plt.scatter(G[li,~nanmask[li]],rescaledSignalTrunc)
             plt.show()
             raw_input('Hit enter to continue')
     return np.array(Ynew), np.array(INonNorm)  #, np.mean(var, axis=0), Rs, Gs 
@@ -333,6 +343,10 @@ def decorrelateNeurons(R, G):
 
 def preprocessNeuralData(R, G, dataPars):
     """zscore etc for neural data."""
+
+    # [ANDY]: do ICA on the unmolested red and green signals
+    Ytoss, I = decorrelateNeuronsICA(R, G)
+
     # prep neural data by masking nans
     mask = np.isnan(R)
     R[mask] = np.interp(np.flatnonzero(mask), np.flatnonzero(~mask), R[~mask])
@@ -346,7 +360,7 @@ def preprocessNeuralData(R, G, dataPars):
     
     
     #ICA
-    YN, I = decorrelateNeuronsICA(R, G)
+    YN, Iinterp = decorrelateNeuronsICA(R, G)
     #YN is the per-neuron normalized  veriosn
     #I has been rescaled after ICA to maintain the std and mean of the original GCamp channel...
     
@@ -361,8 +375,8 @@ def preprocessNeuralData(R, G, dataPars):
     R0 = np.percentile(YN, [20], axis=1).T
     dR = np.divide(YN-R0,np.abs(R0))
 
-    
-    I   = np.array([gaussian_filter1d(line,dataPars['windowGCamp']) for line in I])
+    # [Andy]: Turning off smoothing
+    # I   = np.array([gaussian_filter1d(line,dataPars['windowGCamp']) for line in I])
     
     #$YN = GS/RS
     # percentile scale
@@ -384,7 +398,7 @@ def preprocessNeuralData(R, G, dataPars):
     RM = np.divide(GS/RS-R0,np.abs(R0))
 #    plt.imshow(dR, aspect='auto')
 #    plt.show()
-    return YN, dI, dR, GS, RS, RM
+    return YN, dI, I, dR, GS, RS, RM
 
 def loadData(folder, dataPars, ew=1):
     """load matlab data."""
@@ -424,7 +438,8 @@ def loadData(folder, dataPars, ew=1):
     G = np.array(data['gPhotoCorr'])[:,:len(np.array(data['hasPointsTime']))]
     #
     Ratio = np.array(data['Ratio2'])[:,:len(np.array(data['hasPointsTime']))]
-    Y, dI, dR, GS, RS, RM = preprocessNeuralData(R, G, dataPars)
+
+    Y, dI, I, dR, GS, RS, RM = preprocessNeuralData(R, G, dataPars)
     try:
         dY = np.array(data['Ratio2D']).T
     except KeyError:
@@ -453,7 +468,8 @@ def loadData(folder, dataPars, ew=1):
     Rfull[np.isnan(nanmask)] =np.nan
     dIfull = np.copy(dI)
     dIfull[np.isnan(nanmask)] =np.nan
-    
+
+    I = I[order] #I is rPhotoCorr->ICA no smoothing, no normalization
     Y = Y[order]
     dI = dI[order]
     dR = dR[order]
@@ -467,6 +483,7 @@ def loadData(folder, dataPars, ew=1):
     
     # create a time axis in seconds
     T = np.arange(Y.shape[1])/6.
+
     # redo time axis in seconds for nan issues
     T = np.arange(Y[:,nonNan].shape[1])/6.
     # 
@@ -501,9 +518,14 @@ def loadData(folder, dataPars, ew=1):
     dataDict['Neurons']['ActivityFullPerNeuronNorm'] =  Rfull[order] # full activity
     dataDict['Neurons']['ActivityFullPerNeuron20thNorm'] =  dIfull[order] # full activity
     dataDict['Neurons']['ActivityPerNeuronNorm'] = preprocessing.scale(Y[:,nonNan].T).T # redo because nans
+    #Andy's additions
     dataDict['Neurons']['ActivityPerNeuron20thNorm'] = dI[:,nonNan]
-    
-    
+    dataDict['Neurons']['ActivityICAPure'] = I[:,nonNan]
+    dataDict['Neurons']['ActivityICAPureFull'] = I
+    dataDict['Neurons']['ActivityRatioPure'] = (np.divide(G,R))[:,nonNan]
+    dataDict['Neurons']['ActivityRatioPureFull'] = (np.divide(G,R))
+
+
     
     print('perNeuronVarNorm=')
     print(dataPars.get('perNeuronVarNorm'))
@@ -513,9 +535,9 @@ def loadData(folder, dataPars, ew=1):
         dataDict['Neurons']['Activity'] = dataDict['Neurons']['ActivityPerNeuronNorm'] #this was Monika's old default behavior
         dataDict['Neurons']['ActivityFull'] = dataDict['Neurons']['ActivityFullPerNeuronNorm']
     else:
-        print('===== We want try the new approach of (I-I0) / I0======')
-        dataDict['Neurons']['Activity'] = dataDict['Neurons']['ActivityPerNeuron20thNorm'] #this is what Andy is trying out
-        dataDict['Neurons']['ActivityFull'] = dataDict['Neurons']['ActivityFullPerNeuron20thNorm']
+        print('===== We want try the new approach of plotting just I')
+        dataDict['Neurons']['Activity'] = dataDict['Neurons']['ActivityICAPure'] #this is what Andy is trying out
+        dataDict['Neurons']['ActivityFull'] = dataDict['Neurons']['ActivityICAPureFull']
 
     
     dataDict['Neurons']['RawActivity'] = dR[:,nonNan] # I Think this is bogus and should'nt be used -- Andy

@@ -40,7 +40,7 @@ Ratio2 = mat_contents['Ratio2']
 import prediction.dataHandler as dh
 import numpy as np
 data = {}
-for typ in ['AML18']:
+for typ in ['AML18','AML32']:
     for condition in ['moving']:
         folder = '/Users/leifer/workspace/PredictionCode/{}_{}/'.format(typ, condition)
         dataLog = '/Users/leifer/workspace/PredictionCode/{0}_{1}/{0}_{1}_datasets.txt'.format(typ, condition)
@@ -182,8 +182,20 @@ if True:
 
 
 
+if False: #Just checking the difference between TimeFull and Time
+    plt.figure()
+    plt.plot(data['AML32_moving']['input']['BrainScanner20170610_105634']['Neurons']['TimeFull'], label='TimeFull')
+    plt.plot(data['AML32_moving']['input']['BrainScanner20170610_105634']['Neurons']['Time'],label='Time')
+    plt.legend()
+    plt.show()
 
-
+    plt.figure()
+    plt.plot(np.diff(data['AML32_moving']['input']['BrainScanner20170610_105634']['Neurons']['TimeFull']),
+             label='TimeFull')
+    plt.plot(np.diff(data['AML32_moving']['input']['BrainScanner20170610_105634']['Neurons']['Time']),
+             label='Time')
+    plt.legend()
+    plt.show()
 
 ## Extract neural weights learned by the SLM from a GCaMP Recording
 

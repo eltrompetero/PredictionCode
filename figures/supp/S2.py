@@ -30,6 +30,9 @@ fs = mpl.rcParams["font.size"]
 #
 ################################################
 
+loLim=0
+hiLim=500
+
 data = {}
 for typ in ['AML32', 'AML18', 'AML70', 'AML175', 'Special']:
     for condition in ['chip', 'moving', 'immobilized', 'transition']:# ['moving', 'immobilized', 'chip']:
@@ -162,7 +165,7 @@ for key, axhm,axetho, axpc, dset, title  in zip([movData, immData], \
 #    print np.nanmax(data1), np.nanmax(data2)
 #    cax1 = plotHeatmap(timeActual, data1/np.nanmax(data1)-data2/np.nanmax(data2), ax=axhm, vmin=-1, vmax=1)
     data1 = transient['Neurons']['ActivityFull'][results2half['neuronOrderPCA']]
-    cax1 = plotHeatmap(time, data1, ax=axhm, vmin=-2, vmax=2)
+    cax1 = plotHeatmap(time, data1, ax=axhm, vmin=loLim, vmax=hiLim)
     axhm.xaxis.label.set_visible(False)
     axhm.set_xticks([])
     axhm.set_title(title)
@@ -203,12 +206,15 @@ axEthoLeg.add_artist(leg);
 
  # colorbar
 cbar = fig.colorbar(cax1, cax=axcb, use_gridspec = True)
-cbar.set_ticks([-2,2])
-cbar.set_ticklabels(['<-2','>2'])
+cbar.set_ticks([loLim,hiLim])
+cbar.set_ticklabels(['<'+str(loLim),'>'+str(hiLim)])
 cbar.outline.set_visible(False)
 moveAxes(axcb, 'left', 0.06)
 moveAxes(axcb, 'scaley', -0.08)
-axcb.set_ylabel(r'$\Delta I/I_0$', labelpad = -5, rotation=-90)
+axcb.set_ylabel(r'$I$', labelpad = -5, rotation=-90)
+import prediction.provenance as prov
+prov.stamp(axcb,.9,.3)
+
 ################################################
 #
 #second row -- show example heatmaps for a movng and immobile dataset
@@ -217,10 +223,7 @@ axcb.set_ylabel(r'$\Delta I/I_0$', labelpad = -5, rotation=-90)
 movData = 'BrainScanner20160506_160928'
 immData = 'BrainScanner20180518_094052'
     
-#for key, axhm,axetho, axpc, dset, title  in zip([movData, immData,], \
-#    [axhm1a, axhm2a], [axetho1a, axetho2a],[axpc1a, axpc2a],\
-#    [data['AML18_moving'],data['AML18_immobilized'], data['Special_transition']],\
-#    ['moving (GFP)', 'immobilized (GFP)', 'transient']):
+
 for key, axhm,axetho, axpc, dset, title  in zip([movData, immData,], \
     [axhm1a, axhm2a], [axetho1a, axetho2a],[axpc1a, axpc2a],\
     [data['AML18_moving'],data['AML18_immobilized']],\
@@ -234,12 +237,9 @@ for key, axhm,axetho, axpc, dset, title  in zip([movData, immData,], \
     time = transient['Neurons']['TimeFull']
     timeActual = transient['Neurons']['Time']
     #heatmap
-#    data1 = transient['Neurons']['RawActivity'][results2half['neuronOrderPCA']]
-#    data2 = transient['Neurons']['Ratio'][results2half['neuronOrderPCA']]
-#    print np.nanmax(data1), np.nanmax(data2)
-#    cax1 = plotHeatmap(timeActual, data1/np.nanmax(data1)-data2/np.nanmax(data2), ax=axhm, vmin=-1, vmax=1)
 
-    cax1 = plotHeatmap(time, transient['Neurons']['ActivityFull'][results2half['neuronOrderPCA']], ax=axhm, vmin=-2, vmax=2)
+
+    cax1 = plotHeatmap(time, transient['Neurons']['ActivityFull'][results2half['neuronOrderPCA']], ax=axhm, vmin=loLim, vmax=hiLim)
     axhm.xaxis.label.set_visible(False)
     axhm.set_xticks([])
     axhm.set_title(title)
@@ -267,24 +267,10 @@ for key, axhm,axetho, axpc, dset, title  in zip([movData, immData,], \
     axpc.set_ylim([axpc.get_ylim()[0], yloc*1.01])
     cleanAxes(axpc, where='y')
     moveAxes(axpc, 'down', 0.02)
-## legend for ethogram
-#moveAxes(axEthoLeg, 'right', 0.025)
+
 moveAxes(axEthoLeg, 'up', 0.02)
 cleanAxes(axEthoLeg, where='all')
 
-#handles, labels = axetho.get_legend_handles_labels()
-#leg = mpl.legend.Legend(axEthoLeg, handles[::-1], labels[::-1],frameon=1, loc=1,prop={'size':12},handlelength=0.5, labelspacing=0,handletextpad=0.5)#,bbox_to_anchor=(-1, 0.9), loc=9)
-#for hndl in leg.legendHandles:
-#    hndl._sizes = [0]
-#axEthoLeg.add_artist(leg);
-#
-# # colorbar
-#cbar = fig.colorbar(cax1, cax=axcb, use_gridspec = True)
-#cbar.set_ticks([-0.5,0,2])
-#cbar.set_ticklabels(['<-0.5',0,'>2'])
-#cbar.outline.set_visible(False)
-#moveAxes(axcb, 'left', 0.06)
-#moveAxes(axcb, 'scaley', -0.08)
-#axcb.set_ylabel(r'$\Delta R/R_0$', labelpad = -25)
+
 
 plt.show()
