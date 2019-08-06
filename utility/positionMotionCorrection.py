@@ -1,9 +1,6 @@
 import scipy.io as sio
 
-
-
-    mat_contents = sio.loadmat('/Users/leifer/workspace/PredictionCode/AML18_moving/BrainScanner20170421_103508_MS/PointsStats2.mat')
-
+mat_contents = sio.loadmat('/Users/leifer/workspace/PredictionCode/AML18_moving/BrainScanner20160506_160928_MS/PointsStats2.mat')
 import numpy as np
 #x,y,z coordinates of each point (new index each frame)(
 rawPoints=np.array(np.squeeze(mat_contents['pointStats2']['rawPoints']))
@@ -13,7 +10,7 @@ trackIdx=np.squeeze(np.array(mat_contents['pointStats2']['trackIdx']))
 
 
 #Get the heatmap values
-mat_contents = sio.loadmat('/Users/leifer/workspace/PredictionCode/AML18_moving/BrainScanner20170421_103508_MS/heatData.mat')
+mat_contents = sio.loadmat('/Users/leifer/workspace/PredictionCode/AML18_moving/BrainScanner20160506_160928_MS/heatData.mat')
 rPhotoCorr=mat_contents['rPhotoCorr']
 gPhotoCorr=mat_contents['gPhotoCorr']
 
