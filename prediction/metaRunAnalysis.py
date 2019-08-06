@@ -5,19 +5,6 @@ Created on Wed Jul 10 14:14:34 2019
 This is a meta script to run runAnalysis over and over again.
 @author: leifer
 """
-print('yo')
-
-import git
-repo = git.Repo(search_parent_directories=True)
-sha = repo.head.object.hexsha
-repoPath=repo._working_tree_dir
-repoURL=repo.remotes.origin.url
-
-from datetime import datetime
-
-datetime.today().strftime('%Y-%m-%d %H:%M')
-
-print(sha)
 
 ####
 
