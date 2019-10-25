@@ -25,7 +25,7 @@ def getStampString():
 
     return str(timestamp + '\n' + str(hash) + '\n' + giturl + '\n' + gitpath)
 
-def stamp(ax, x,y):
+def stamp(ax, x,y,notes):
     """
     :param ax: matplotlib axes h
     :param x: fractional location in the plot
@@ -37,7 +37,7 @@ def stamp(ax, x,y):
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 
     # place a text box in upper left in axes coords
-    ax.text(x, y, getStampString(), transform=ax.transAxes, fontsize=8,
+    ax.text(x, y, getStampString()+'\n'+notes, transform=ax.transAxes, fontsize=8,
             verticalalignment='top', bbox=props)
 
 

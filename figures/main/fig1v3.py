@@ -69,6 +69,8 @@ print 'Done reading data.'
 #
 ################################################
 
+
+
 fig = plt.figure('Fig1Neural dynamics in freely moving animals', figsize=(9.5, 6.5))
 gsHeatmap = gridspec.GridSpec(6,4,  width_ratios=[1.5, 0.1, 0.5, 0.5], height_ratios = [0.05,0.95,0.1,0.75,0.05, 0.75])
 gsHeatmap.update(left=0.06, right=0.98,  bottom = 0.06, top=0.98, hspace=0.3, wspace=0.75)
@@ -190,17 +192,20 @@ axTetra.plot([timeActual[train[-1]],timeActual[train[-1]]], [0.86*yloc, 0.92*ylo
 cleanAxes(axTetra)
 axTetra.set_xlim([np.min(timeActual), np.max(timeActual)])
 #heatmap
-cax1 = plotHeatmap(time, transient['Neurons']['ActivityFull'][results2half['neuronOrderPCA']], ax=axhm, vmin=-2, vmax=2)
+
+
+
+cax1 = plotHeatmap(time, transient['Neurons']['ActivityFull'][results2half['neuronOrderPCA']], ax=axhm, vmin=50, vmax=250)
 axhm.xaxis.label.set_visible(False)
 axhm.set_xticks([])
 # colorbar
 cbar = fig.colorbar(cax1, cax=axcb, use_gridspec = True)
-cbar.set_ticks([-2,0,2])
-cbar.set_ticklabels(['<2',0,'>2'])
+#cbar.set_ticks([-2,0,2])
+#cbar.set_ticklabels(['<2',0,'>2'])
 cbar.outline.set_visible(False)
 moveAxes(axcb, 'left', 0.06)
 moveAxes(axcb, 'scaley', -0.08)
-axcb.set_ylabel(r'$\Delta I/I_0$', labelpad = 10, rotation=-90)
+axcb.set_ylabel(r'$I_c$', labelpad = 10, rotation=-90)
 #ethogram
 
 plotEthogram(axetho, time, transient['Behavior']['EthogramFull'], alpha = 1, yValMax=1, yValMin=0, legend=0)

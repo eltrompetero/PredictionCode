@@ -212,8 +212,8 @@ cbar.outline.set_visible(False)
 moveAxes(axcb, 'left', 0.06)
 moveAxes(axcb, 'scaley', -0.08)
 axcb.set_ylabel(r'$I$', labelpad = -5, rotation=-90)
-import prediction.provenance as prov
-prov.stamp(axcb,.9,.3)
+
+
 
 ################################################
 #
@@ -238,8 +238,11 @@ for key, axhm,axetho, axpc, dset, title  in zip([movData, immData,], \
     timeActual = transient['Neurons']['Time']
     #heatmap
 
+    #dynamically set the limiti of the heatmap
+    upperlim=np.nanpercentile(np.ravel(transient['Neurons']['ActivityFull'][results2half['neuronOrderPCA']]),95)
+    cax1 = plotHeatmap(time, transient['Neurons']['ActivityFull'][results2half['neuronOrderPCA']], ax=axhm, vmin=loLim, vmax=upperlim)
 
-    cax1 = plotHeatmap(time, transient['Neurons']['ActivityFull'][results2half['neuronOrderPCA']], ax=axhm, vmin=loLim, vmax=hiLim)
+
     axhm.xaxis.label.set_visible(False)
     axhm.set_xticks([])
     axhm.set_title(title)
@@ -267,6 +270,10 @@ for key, axhm,axetho, axpc, dset, title  in zip([movData, immData,], \
     axpc.set_ylim([axpc.get_ylim()[0], yloc*1.01])
     cleanAxes(axpc, where='y')
     moveAxes(axpc, 'down', 0.02)
+
+import prediction.provenance as prov
+prov.stamp(axpc, .5, .5,"Note: bottom row has different colorbar")
+
 
 moveAxes(axEthoLeg, 'up', 0.02)
 cleanAxes(axEthoLeg, where='all')
