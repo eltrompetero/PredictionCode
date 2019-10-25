@@ -164,8 +164,13 @@ for key, axhm,axetho, axpc, dset, title  in zip([movData, immData], \
 #    data2 = transient['Neurons']['Ratio'][results2half['neuronOrderPCA']]
 #    print np.nanmax(data1), np.nanmax(data2)
 #    cax1 = plotHeatmap(timeActual, data1/np.nanmax(data1)-data2/np.nanmax(data2), ax=axhm, vmin=-1, vmax=1)
+
+
     data1 = transient['Neurons']['ActivityFull'][results2half['neuronOrderPCA']]
-    cax1 = plotHeatmap(time, data1, ax=axhm, vmin=loLim, vmax=hiLim)
+
+    upperlim=np.nanpercentile(np.ravel(data1),99)
+
+    cax1 = plotHeatmap(time, data1, ax=axhm, vmin=loLim, vmax=upperlim)
     axhm.xaxis.label.set_visible(False)
     axhm.set_xticks([])
     axhm.set_title(title)
@@ -205,13 +210,14 @@ for hndl in leg.legendHandles:
 axEthoLeg.add_artist(leg);
 
  # colorbar
-cbar = fig.colorbar(cax1, cax=axcb, use_gridspec = True)
-cbar.set_ticks([loLim,hiLim])
-cbar.set_ticklabels(['<'+str(loLim),'>'+str(hiLim)])
-cbar.outline.set_visible(False)
-moveAxes(axcb, 'left', 0.06)
-moveAxes(axcb, 'scaley', -0.08)
-axcb.set_ylabel(r'$I$', labelpad = -5, rotation=-90)
+if False: #Andy is turning off this colorbar for now.
+    cbar = fig.colorbar(cax1, cax=axcb, use_gridspec = True)
+    cbar.set_ticks([loLim,hiLim])
+    cbar.set_ticklabels(['<'+str(loLim),'>'+str(hiLim)])
+    cbar.outline.set_visible(False)
+    moveAxes(axcb, 'left', 0.06)
+    moveAxes(axcb, 'scaley', -0.08)
+    axcb.set_ylabel(r'$I$', labelpad = -5, rotation=-90)
 
 
 
@@ -239,7 +245,8 @@ for key, axhm,axetho, axpc, dset, title  in zip([movData, immData,], \
     #heatmap
 
     #dynamically set the limiti of the heatmap
-    upperlim=np.nanpercentile(np.ravel(transient['Neurons']['ActivityFull'][results2half['neuronOrderPCA']]),95)
+    upperlim=np.nanpercentile(np.ravel(transient['Neurons']['ActivityFull'][results2half['neuronOrderPCA']]),99)
+    print(upperlim)
     cax1 = plotHeatmap(time, transient['Neurons']['ActivityFull'][results2half['neuronOrderPCA']], ax=axhm, vmin=loLim, vmax=upperlim)
 
 
@@ -272,7 +279,7 @@ for key, axhm,axetho, axpc, dset, title  in zip([movData, immData,], \
     moveAxes(axpc, 'down', 0.02)
 
 import prediction.provenance as prov
-prov.stamp(axpc, .5, .5,"Note: bottom row has different colorbar")
+prov.stamp(axpc, .5, .5,"Colorbar for each plot scald to 99th percentile")
 
 
 moveAxes(axEthoLeg, 'up', 0.02)
