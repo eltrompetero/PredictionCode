@@ -345,17 +345,20 @@ def preprocessNeuralData(R, G, dataPars):
     """zscore etc for neural data."""
 
     # [ANDY]: do ICA on the unmolested red and green signals
+    # (with NaNs)
     Ytoss, I = decorrelateNeuronsICA(R, G)
+    #[Andy]: I intend to use just the ICA'd signal, with the NaNs and have it rescaled with the original mean.
+    #      at this point in the function I have accomplished those goals. T
+    #       The rest of the function deals with interpolation, smoothing, or normalization.
+
 
     # prep neural data by masking nans
+    # and interpolate
     mask = np.isnan(R)
     R[mask] = np.interp(np.flatnonzero(mask), np.flatnonzero(~mask), R[~mask])
     mask = np.isnan(G)
     G[mask] = np.interp(np.flatnonzero(mask), np.flatnonzero(~mask), G[~mask])
     
-    # smooth with GCamp6 halftime = 1s
-    RS =np.array([gaussian_filter1d(line,dataPars['windowGCamp']) for line in R])       
-    GS =np.array([gaussian_filter1d(line,dataPars['windowGCamp']) for line in G])       
 
     
     
@@ -387,18 +390,88 @@ def preprocessNeuralData(R, G, dataPars):
         import warnings
         warnings.warn('Found instance where I0 is less then zero.')
     #dR = YN
-    # zscore values 
+    # zscore values
     YN =  preprocessing.scale(YN.T).T
 
-    
-    
-    
-    
+
+    #Make some ouptuts that also have smoothing but don't seem to bre used herel
+    # smooth with GCamp6 halftime = 1s
+    RS =np.array([gaussian_filter1d(line,dataPars['windowGCamp']) for line in R])
+    GS =np.array([gaussian_filter1d(line,dataPars['windowGCamp']) for line in G])
+
     R0 = np.percentile(GS/RS, [20], axis=1).T
     RM = np.divide(GS/RS-R0,np.abs(R0))
+
+
+
 #    plt.imshow(dR, aspect='auto')
 #    plt.show()
     return YN, dI, I, dR, GS, RS, RM
+
+def truncateNaNTimeMask(I, axis=0, fracRequired=.9):
+    """Return a mask for I that excludes time points with large percentage of nans across neurons
+
+    Keyword arguments:
+    I -- dataset of neural activity
+    axis -- axis along which to sum over to get a value for each time point (default 0)
+            this specifies the orientation of the timeseries matrix
+    fracRequired  -- the fraction of neurons required to be not NaN's at
+                    a timepoint to preserve that timepoint (default .9)
+
+    Returns:
+        mask -- mask of I where true values identify a truncated dataset without problematic nan timepts
+    """
+    numNeurons=I.shape[axis]
+    assert numNeurons<500, "Seeing "+str(numNeurons) + "neurons--  way too many! Stopping execution."
+
+    numNans=np.sum(np.isnan(I),axis=axis)
+    fracNans=np.true_divide(numNans,numNeurons)
+
+    import numpy.matlib
+    mask = np.matlib.repmat( (1-fracNans) > fracRequired, numNeurons, 1).T
+
+    assert mask.shape == I.shape, "Andy screwed up the code."
+    assert isinstance(mask, np.ndarray)
+    return mask
+
+def interpNaNs(I,axis=0, maxNans=.3):
+    """
+    Return a nanmask and values interpolated in time.
+    Inputs:
+        I -- dataset of neural activity
+        axis -- axis along which to sum over to get a value for each time point (default 0)
+            this specifies the orientation of the timeseries matrix
+        maxNans  -- the largest accepted fraction of neuron time points allowed to be NaNs across
+                all neuron time points
+    Returns:
+        mask -- mask of I where true values identify a NaN
+        interpFill -- interpolated values to fill in where the mask is true
+    """
+    numNeurons = I.shape[axis]
+    assert numNeurons < 500, "Seeing " + str(numNeurons) + "neurons--  way too many! Stopping execution."
+
+    mask = np.isnan(I)
+
+    fracNan = np.true_divide(np.sum(mask, axis=None), mask.size)
+    if True:
+        print(str(fracNan*100)+"% of neuron time points are NaNs")
+    assert fracNan < maxNans,  str(fracNan*100)+ '% of time points are Nans. Max allowed is '+str(maxNans*100)+'%.'
+
+
+    Iinterp = np.copy(I)
+
+    if axis==1:
+        for neuron in range(0, I.shape[axis]):
+            Iinterp[mask[:, neuron], neuron] = np.interp(np.flatnonzero(mask[:, neuron]), np.flatnonzero(~mask[:, neuron]),
+                                                     I[~mask[:, neuron], neuron])
+    if axis == 0:
+        for neuron in range(0, I.shape[axis]):
+            Iinterp[neuron, mask[neuron, :]] = np.interp(np.flatnonzero(mask[neuron, :]),
+                                                         np.flatnonzero(~mask[neuron, :]),
+                                                         I[neuron, ~mask[neuron, :]])
+    return mask, Iinterp
+
+
 
 def loadData(folder, dataPars, ew=1):
     """load matlab data."""

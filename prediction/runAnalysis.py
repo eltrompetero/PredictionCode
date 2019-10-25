@@ -57,7 +57,8 @@ def actuallyRun(typ='AML32', condition = 'moving'):
         resultDict[key]['pars'] = dataPars
     # analysis parameters
     
-    pars ={'nCompPCA':20, # no of PCA components
+    pars ={'nCompPCA': 20, # no of PCA components (Andy wants to calculate all of them, not just 20,
+                             # but for now we use 20 because 'None' fails when you save to the HD5 format
             'PCAtimewarp':False, #timewarp so behaviors are equally represented
             'trainingCut': 0.6, # what fraction of data to use for training 
             'trainingType': 'middle', # simple, random or middle.select random or consecutive data for training. Middle is a testset in the middle
@@ -71,7 +72,7 @@ def actuallyRun(typ='AML32', condition = 'moving'):
             'periods': np.arange(0, 300), # relevant periods in seconds for timescale estimate
         }
     
-    behaviors = ['AngleVelocity', 'Eigenworm3']
+    behaviors = ['AngleVelocity', 'Eigenworm3', 'Theta']
     
     ###############################################    
     # 

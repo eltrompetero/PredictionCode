@@ -195,26 +195,45 @@ def createTrainingTestIndices(data, pars, label):
 def runPCANormal(data, pars, whichPC = 0, testset = None, deriv = False, useRaw=False, debug=False):
     """run PCA on neural data and return nicely organized dictionary."""
     nComp = pars['nCompPCA']
+    print("in runPCANormal the number of componenets are ")
+    print(nComp)
     pca = PCA(n_components = nComp)
     if deriv:
-        Neuro = data['Neurons']['derivActivity']
+        NeuroWithNAn = data['Neurons']['derivActivity']
     if pars['useRank']:
-        Neuro = data['Neurons']['rankActivity']
+        NeuroWithNAn = data['Neurons']['rankActivity']
     if useRaw:
         import warnings
         warnings.warn('Andy is suspciious of the "Raw" activity..')
-        Neuro = data['Neurons']['Ratio']
+        NeuroWithNAn= data['Neurons']['Ratio']
     else:
-        Neuro = np.copy(data['Neurons']['Activity'])
+        NeuroWithNAn = np.copy(data['Neurons']['Activity'])
+
+
+    #Since andy is preserving the NaNs we now have to interpolate over them to do PCA
+    interpMask, Neuro = dh.interpNaNs(NeuroWithNAn, axis=0, maxNans=.3)
+
+
+
     if testset is not None:
         Yfull = np.copy(Neuro).T
         Y = Neuro[:,testset].T
     else:
         Y= Neuro.T
         Yfull = Y
+
+
+
+
+
+
+
     # make sure data is centered
     sclar= StandardScaler(copy=True, with_mean=True, with_std=False)
     Y = sclar.fit_transform(Y)
+
+
+
     # neuron activity is transposed such that result = nsamples*nfeatures.
     comp = pca.fit_transform(Y).T
     pcs = pca.components_.T
@@ -223,6 +242,7 @@ def runPCANormal(data, pars, whichPC = 0, testset = None, deriv = False, useRaw=
         comp = np.cumsum(comp, axis=1)
     
     indices = np.argsort(pcs[:,whichPC])
+
 
     if debug:
         plt.subplot(311)
@@ -242,6 +262,7 @@ def runPCANormal(data, pars, whichPC = 0, testset = None, deriv = False, useRaw=
     pcares['neuronWeights'] =  pcs
     pcares['neuronOrderPCA'] =  indices
     pcares['pcaComponents'] =  comp
+
     # reconstruct with nCompPCA
     sclar2= StandardScaler(copy=True, with_mean=True, with_std=False)
     Yfull = sclar2.fit_transform(Yfull)
@@ -590,7 +611,9 @@ def runLinearModel(data, results, pars, splits, plot = False, behaviors = ['Angl
             clustres = runHierarchicalClustering(data, pars)
             X = clustres['Activity'].T
         else:
-            X = np.copy(data['Neurons']['Activity']).T # transpose to conform to nsamples*nfeatures
+            XwithNaNs = np.copy(data['Neurons']['Activity']).T # transpose to conform to nsamples*nfeatures
+            interpMask, X = dh.interpNaNs(XwithNaNs, axis=1, maxNans=.3)
+
         if subset is not None:
             # only a few neurons
             if len(subset[label])<1:
@@ -832,7 +855,9 @@ def runLasso(data, pars, splits, plot = False, behaviors = ['AngleVelocity', 'Ei
             clustres = runHierarchicalClustering(data, pars)
             X = clustres['Activity'].T
         else:
-            X = np.copy(data['Neurons']['Activity'].T) # transpose to conform to nsamples*nfeatures
+            XwithNAns = np.copy(data['Neurons']['Activity'].T) # transpose to conform to nsamples*nfeatures
+            interpMask, X = dh.interpNaNs(XwithNAns, axis=1, maxNans=.3)
+
         # implement time lagging -- forward and reverse
         
         if lag is not None:
@@ -844,7 +869,7 @@ def runLasso(data, pars, splits, plot = False, behaviors = ['AngleVelocity', 'Ei
         # fit scale model
         scale = False
         if scale:
-            scalerX = preprocessing.StandardScaler().fit(X[trainingsInd])  
+            scalerX = preprocessing.StandardScaler().fit(X[trainingsInd])
             scalerY = preprocessing.StandardScaler().fit(Y[trainingsInd])  
             #scale data
             X = scalerX.transform(X)
@@ -960,7 +985,9 @@ def runElasticNet(data, pars, splits, plot = False, scramble = False, behaviors 
         elif pars['useDeconv']:
             X = data['Neurons']['deconvolvedActivity'].T
         else:
-            X = np.copy(data['Neurons']['Activity']).T # transpose to conform to nsamples*nfeatures
+            XwithNaNs = np.copy(data['Neurons']['Activity']).T # transpose to conform to nsamples*nfeatures
+            interpMask,  X = dh.interpNaNs(XwithNaNs, axis=1, maxNans=.3)
+
         if scramble:
             # similar to GFP control: scamble timeseries
             np.random.shuffle(Y)
@@ -1059,12 +1086,12 @@ def runElasticNet(data, pars, splits, plot = False, scramble = False, behaviors 
             plt.show(block=True)
     return linData
 
-###############################################    
-# 
+###############################################
+#
 # run LASSO with multiple time lags and collate data
 #
 ##############################################
-    
+
 def timelagRegression(data, pars, splits, plot = False, behaviors = ['AngleVelocity', 'Eigenworm3'], flag = 'LASSO', lags = np.arange(-18,19, 3)):
     """runs LASSO in the same train/test split for multiple time lags and computes the standard erro, parameters etc."""
     # store results
@@ -1195,7 +1222,9 @@ def scoreModelProgression(data, results, splits, pars, fitmethod = 'LASSO', beha
         if pars['useRank']:
             X = data['Neurons']['rankActivity'].T
         else:
-            X = np.copy(data['Neurons']['Activity']).T # transpose to conform to nsamples*nfeatures
+            XwithNaNs = np.copy(data['Neurons']['Activity']).T # transpose to conform to nsamples*nfeatures
+            interpMask, X = dh.interpNaNs(XwithNaNs, axis=1, maxNans=.3)
+
         trainingsInd, testInd = splits[label]['Train'], splits[label]['Test']
         # individual predictive scores
         indScore = []
@@ -1296,11 +1325,13 @@ def predictNeuralDynamicsfromBehavior(data,  splits, pars):
     nComp = 10#pars['nCompPCA']
     pca = PCA(n_components = nComp)
     Neuro = np.copy(data['Neurons']['Activity']).T
-    pcs = pca.fit_transform(Neuro)
+    interpMask, Neurointerp = dh.interpNaNs(Neuro, axis=1, maxNans=.3)
+
+    pcs = pca.fit_transform(Neurointerp)
     #comp = pca.components_.T
     #now we use a linear model to train and test our predictions
     #here we will simply use a 50/50 split for now
-    half = int((len(Neuro))/2.)
+    half = int((len(Neurointerp))/2.)
     tmp = np.arange(2*half)
     test = tmp[int(half/2.):int(3*half/2.)]
     train = np.setdiff1d(tmp, test)
@@ -1375,8 +1406,13 @@ def predictBehaviorFromPCA(data,  splits, pars, behaviors):
         # also reduce dimensionality of the neural dynamics.
         nComp = 3#pars['nCompPCA']
         pca = PCA(n_components = nComp)
+
+
         Neuro = np.copy(data['Neurons']['Activity']).T
-        pcs = pca.fit_transform(Neuro)
+        interpMask, Neurointerp = dh.interpNaNs(Neuro, axis=1, maxNans=.3)
+
+        pcs = pca.fit_transform(Neurointerp)
+
         #now we use a linear model to train and test our predictions
         # lets build a linear model
         lin = linear_model.LinearRegression(normalize=False)
