@@ -21,14 +21,15 @@ def rectified_derivative(neurons):
 
     return deriv_pos, deriv_neg, deriv
 
-with open('new_comparison.dat', 'rb') as handle:
+with open('/home/sdempsey/new_comparison.dat', 'rb') as handle:
     data = pickle.load(handle)#, encoding = 'bytes')
 
-with open('neuron_data_bothmc_nb.dat', 'rb') as f:
+with open('/home/sdempsey/neuron_data_bothmc_nb.dat', 'rb') as f:
     neuron_data = pickle.load(f)#, encoding = 'bytes')
 
-for k in filter(lambda x: '134800' in x, data.keys()):
-    fig, ax = plt.subplots(6, 2, figsize = (20, 15), sharex = True)
+n=7
+for k in filter(lambda x: '105620' in x, data.keys()):
+    fig, ax = plt.subplots(n+1, 2, figsize = (20, 15), sharex = True)
 
     neurons_unn = neuron_data[k]['neurons']
     _, _, nderiv = rectified_derivative(neurons_unn)
@@ -56,7 +57,7 @@ for k in filter(lambda x: '134800' in x, data.keys()):
         hws = np.argsort(-np.abs(weights))
         nn = weights.size//2
 
-        for i in range(5):
+        for i in range(n):
             ax[i+1,col].plot(time, neurons[hws[i],:], color = '#ff8c00' if hws[i] >= nn else '#008cff')
             ax[i+1,col].set_ylabel('#%d (W = %0.3f)' % (hws[i] % nn, weights[hws[i]]), color = '#ff8c00' if hws[i] >= nn else '#008cff', fontsize = 14)
 
@@ -79,4 +80,4 @@ for k in filter(lambda x: '134800' in x, data.keys()):
 
     fig.suptitle(k, fontsize = 18)
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
-    fig.savefig('fig5_%s.png' % k)
+    fig.savefig('fig5_%s.pdf' % k)
