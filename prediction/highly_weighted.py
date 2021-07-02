@@ -53,7 +53,7 @@ rho2_adj_curv = np.array([data[keys[x]]['curvature'][False]['scorespredicted'][1
 n_impact_vel, n_impact_curv,  n_impact_overlap= np.zeros(nKeys), np.zeros(nKeys), np.zeros(nKeys)
 
 nnn=np.zeros(nKeys)
-for ii, dataset in enumerate(filter(lambda x: '110803' in x, keys[:nKeys])):
+for ii, dataset in enumerate(filter(lambda x: True, keys[:nKeys])):
     print(dataset)
     nnn[ii] = neuron_data[dataset]['neurons'].shape[0]
     row = ii // 4
@@ -143,7 +143,7 @@ import os
 import prediction.provenance as prov
 import userTracker as userTracker
 outpath = os.path.join(userTracker.codePath(), outfolder)
-fig.savefig(os.path.join(outpath,'highly_weighted.pdf'), metadata=prov.pdf_metadata(__file__))
+fig.savefig(os.path.join(outpath,'highly_weighted.pdf'))
 
 fig3=plt.figure(figsize=[4,4])
 plt.plot(rho2_adj_vel, n_impact_vel, '^', markersize=10, color='blue', fillstyle='none', label='Velocity')
@@ -156,7 +156,7 @@ plt.yticks(fontsize=16)
 
 plt.xlim(0,1)
 plt.legend()
-fig3.savefig(os.path.join(outpath,'nneurons_rho.pdf'), metadata=prov.pdf_metadata(__file__))
+fig3.savefig(os.path.join(outpath,'nneurons_rho.pdf'))
 
 
 #Plot the Number of NEurons
@@ -168,19 +168,19 @@ axnew = sns.boxplot(data=[n_impact_vel,n_impact_curv, n_impact_overlap])
 axnew = sns.swarmplot(data=[n_impact_vel,n_impact_curv, n_impact_overlap], color=".2")
 plt.xticks(fontsize=16)
 plt.yticks(fontsize=16)
-fig2.savefig(os.path.join(outpath,'number_of_neurons.pdf'), metadata=prov.pdf_metadata(__file__))
+fig2.savefig(os.path.join(outpath,'number_of_neurons.pdf'))
 
 
 print(np.median(n_impact_vel), np.median(n_impact_curv), np.median(n_impact_overlap))
 
-print('Median N90 for vel ', np.mean(n_impact_vel), np.std(n_impact_vel))
-print('Median N90 for curv', np.mean(n_impact_curv), np.std(n_impact_curv))
-print('Median N90 for intersect', np.mean(n_impact_overlap), np.std(n_impact_overlap))
+print('Median N90 for vel ', np.median(n_impact_vel), np.std(n_impact_vel))
+print('Median N90 for curv', np.median(n_impact_curv), np.std(n_impact_curv))
+print('Median N90 for intersect', np.median(n_impact_overlap), np.std(n_impact_overlap))
 
 
 
-print('Median N90 for vel where rho>0.4', np.mean(n_impact_vel[rho2_adj_vel>0.4]), np.std(n_impact_vel[rho2_adj_vel>0.4]))
-print('Median N90 for curv where rho>0.4', np.mean(n_impact_curv[rho2_adj_curv>0.4]), np.std(n_impact_curv[rho2_adj_curv>0.4]))
-print('Median N90 for intersect where rho>0.4', np.mean(n_impact_overlap[np.logical_or(rho2_adj_curv>0.4, rho2_adj_vel>0.4)]), np.std(n_impact_overlap[np.logical_or(rho2_adj_curv>0.4, rho2_adj_vel>0.4)]))
+print('Median N90 for vel where rho>0.4', np.median(n_impact_vel[rho2_adj_vel>0.4]), np.std(n_impact_vel[rho2_adj_vel>0.4]))
+print('Median N90 for curv where rho>0.4', np.median(n_impact_curv[rho2_adj_curv>0.4]), np.std(n_impact_curv[rho2_adj_curv>0.4]))
+print('Median N90 for intersect where rho>0.4', np.median(n_impact_overlap[np.logical_or(rho2_adj_curv>0.4, rho2_adj_vel>0.4)]), np.std(n_impact_overlap[np.logical_or(rho2_adj_curv>0.4, rho2_adj_vel>0.4)]))
 
 print('Median total neurons:', np.median(nnn), ' std:', np.std(nnn))
