@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from prediction import userTracker
 import prediction.dataHandler as dh
-from seaborn import clustermap
+#from seaborn import clustermap
 
 # For data set 110803 (moving only)- frames 1-1465, AVA 33 and 16
 #Goal is to plot neural trajectories projected into first three PCs
@@ -247,6 +247,9 @@ for typ_cond in ['AKS297.51_transition']: #, 'AKS297.51_moving']:
         print("AVAR weights:", pca.components_[:, AVAR_ci])
         print("AVAL ranks:", np.where(np.argsort(np.abs(pca.components_)) == AVAL_ci))
         print("AVAR ranks:", np.where(np.argsort(np.abs(pca.components_)) == AVAR_ci))
+        print(pca.components_.shape)
+        print(pca.components_)
+        print(np.sort(np.abs(pca.components_)))
         return
 
     def project_into_immobile_pcs(recording, imm_start_index, end_index, AVAL_ci=None, AVAR_ci=None, label=''):
