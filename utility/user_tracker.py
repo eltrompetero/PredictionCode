@@ -7,13 +7,15 @@ import getpass
 dataPaths = {
 	'phy-leiferfcp':               '/Users/leifer/workspace/PredictionCode/',
 	'Ross-PC':                     '/mnt/d/worm_data',
-	'tigressdata2.princeton.edu':  '/projects/LEIFER/PanNeuronal/decoding_analysis/worm_data'
+	'tigressdata2.princeton.edu':  '/projects/LEIFER/PanNeuronal/decoding_analysis/worm_data',
+        'powerhouse':                  '/home/eddie/Dropbox/Research/scotus4/data/Hallinen et al.'
 }
 
 codePaths = {
 	'phy-leiferfcp':               '/Users/leifer/workspace/PredictionCode/',
 	'Ross-PC':                     '/home/srossd/PredictionCode/',
-	'tigressdata2.princeton.edu':  '/home/'+getpass.getuser()+'/PredictionCode'
+	'tigressdata2.princeton.edu':  '/home/'+getpass.getuser()+'/PredictionCode',
+        'powerhouse':                  '/home/eddie/Dropbox/Research/scotus4/py/PredictionCode'
 }
 
 def getPath(dict):
